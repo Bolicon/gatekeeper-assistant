@@ -1,7 +1,7 @@
 import { useState } from 'react';
 import { Header } from '@/components/layout/Header';
 import { QuickEntry } from '@/components/entry/QuickEntry';
-import { LogsTable } from '@/components/logs/LogsTable.tsx';
+import { LogsTable } from '@/components/logs/LogsTable';
 import { SettingsDialog } from '@/components/settings/SettingsDialog';
 import { useGateData } from '@/hooks/useGateData';
 
@@ -26,7 +26,6 @@ const Index = () => {
       <Header onSettingsClick={() => setSettingsOpen(true)} />
 
       <main className="container mx-auto px-4 py-6 space-y-6">
-        {/* Quick Entry */}
         <QuickEntry
           persons={persons}
           recentPersons={recentPersons}
@@ -34,7 +33,6 @@ const Index = () => {
           onAddPerson={addPerson}
         />
 
-        {/* Logs Table */}
         <LogsTable
           logs={filteredLogs}
           persons={persons}
@@ -44,7 +42,6 @@ const Index = () => {
         />
       </main>
 
-      {/* Settings Dialog */}
       <SettingsDialog
         open={settingsOpen}
         onOpenChange={setSettingsOpen}
