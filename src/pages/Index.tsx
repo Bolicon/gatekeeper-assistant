@@ -20,7 +20,7 @@ const Index = () => {
     <div className="min-h-screen bg-background">
       <Header onSettingsClick={() => setSettingsOpen(true)} />
 
-      <main className="container mx-auto px-4 py-6">
+      <main className="container mx-auto px-2 sm:px-4 py-4 sm:py-6">
         <QuickEntry
           persons={persons}
           recentPersons={recentPersons}

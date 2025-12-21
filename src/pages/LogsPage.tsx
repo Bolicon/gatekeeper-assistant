@@ -15,19 +15,23 @@ const LogsPage = () => {
     setFilters,
     setSuggestHours,
     exportToCSV,
+    updateLog,
+    deleteLog,
   } = useGateData();
 
   return (
     <div className="min-h-screen bg-background">
       <Header onSettingsClick={() => setSettingsOpen(true)} />
 
-      <main className="container mx-auto px-4 py-6">
+      <main className="container mx-auto px-2 sm:px-4 py-4 sm:py-6">
         <ActivityLog
           logs={filteredLogs}
           persons={persons}
           filters={filters}
           onFilterChange={setFilters}
           onExport={exportToCSV}
+          onUpdateLog={updateLog}
+          onDeleteLog={deleteLog}
         />
       </main>
 
