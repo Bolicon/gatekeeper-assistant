@@ -59,8 +59,8 @@ export function QuickEntry({ persons, recentPersons, onAddLog, onAddPerson }: Qu
   };
 
   const handleSubmit = (actionType: 'entry' | 'exit') => {
-    if (!name.trim() || !idNumber.trim() || !role.trim()) {
-      toast.error('נא למלא שם, ת"ז ותפקיד');
+    if (!name.trim() || !idNumber.trim() || !vehicleNumber.trim()) {
+      toast.error('נא למלא שם, ת"ז/מ.א ומספר רכב');
       return;
     }
 
@@ -76,8 +76,8 @@ export function QuickEntry({ persons, recentPersons, onAddLog, onAddPerson }: Qu
       const newPerson = onAddPerson({
         name,
         idNumber,
-        role,
-        vehicleNumber: vehicleNumber || undefined,
+        role: role || undefined,
+        vehicleNumber,
       });
       personId = newPerson.id;
     }
@@ -87,8 +87,8 @@ export function QuickEntry({ persons, recentPersons, onAddLog, onAddPerson }: Qu
       personId: personId!,
       personName: name,
       idNumber,
-      role,
-      vehicleNumber: vehicleNumber || undefined,
+      role: role || undefined,
+      vehicleNumber,
       actionType,
       note: note || undefined,
     });
@@ -200,7 +200,7 @@ export function QuickEntry({ persons, recentPersons, onAddLog, onAddPerson }: Qu
         </div>
 
         <div className="space-y-2">
-          <Label htmlFor="role">תפקיד *</Label>
+          <Label htmlFor="role">תפקיד</Label>
           <Input
             id="role"
             value={role}
@@ -209,7 +209,7 @@ export function QuickEntry({ persons, recentPersons, onAddLog, onAddPerson }: Qu
         </div>
 
         <div className="space-y-2">
-          <Label htmlFor="vehicle">מספר רכב</Label>
+          <Label htmlFor="vehicle">מספר רכב *</Label>
           <div className="relative">
             <Car className="absolute right-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
             <Input
