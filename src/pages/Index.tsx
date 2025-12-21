@@ -12,6 +12,7 @@ const Index = () => {
   const {
     persons,
     filteredLogs,
+    recentPersons,
     stats,
     suggestHours,
     filters,
@@ -33,6 +34,7 @@ const Index = () => {
         {/* Quick Entry */}
         <QuickEntry
           persons={persons}
+          recentPersons={recentPersons}
           onAddLog={addLog}
           onAddPerson={addPerson}
         />
