@@ -81,6 +81,16 @@ export function useGateData() {
     return newLog;
   }, []);
 
+  // Update log entry
+  const updateLog = useCallback((id: string, updates: Partial<EntryLog>) => {
+    setLogs(prev => prev.map(log => log.id === id ? { ...log, ...updates } : log));
+  }, []);
+
+  // Delete log entry
+  const deleteLog = useCallback((id: string) => {
+    setLogs(prev => prev.filter(log => log.id !== id));
+  }, []);
+
   // Get recent persons (for auto-suggest)
   const recentPersons = useMemo(() => {
     const cutoffTime = new Date(Date.now() - suggestHours * 60 * 60 * 1000);
@@ -184,6 +194,8 @@ export function useGateData() {
     updatePerson,
     deletePerson,
     addLog,
+    updateLog,
+    deleteLog,
     setFilters,
     setSuggestHours,
     exportToCSV,

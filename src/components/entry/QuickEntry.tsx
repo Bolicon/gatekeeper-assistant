@@ -104,37 +104,38 @@ export function QuickEntry({ persons, recentPersons, onAddLog, onAddPerson }: Qu
   const hasFormData = name || idNumber || role || vehicleNumber;
 
   return (
-    <div className="gradient-card rounded-3xl p-8 border border-border/40 shadow-lg animate-fade-in-up">
+    <div className="gradient-card rounded-2xl sm:rounded-3xl p-4 sm:p-8 border border-border/40 shadow-lg animate-fade-in-up">
       {/* Header */}
-      <div className="flex items-center justify-between mb-6">
-        <div className="flex items-center gap-3">
-          <div className="gradient-primary p-2.5 rounded-xl">
-            <UserPlus className="h-5 w-5 text-primary-foreground" />
+      <div className="flex items-center justify-between mb-4 sm:mb-6">
+        <div className="flex items-center gap-2 sm:gap-3">
+          <div className="gradient-primary p-2 sm:p-2.5 rounded-xl">
+            <UserPlus className="h-4 w-4 sm:h-5 sm:w-5 text-primary-foreground" />
           </div>
-          <h2 className="text-xl font-bold text-foreground">רישום כניסה / יציאה</h2>
+          <h2 className="text-lg sm:text-xl font-bold text-foreground">רישום כניסה / יציאה</h2>
         </div>
         {hasFormData && (
           <Button 
             variant="ghost" 
             size="sm" 
             onClick={handleClearForm}
-            className="text-muted-foreground hover:text-destructive transition-colors"
+            className="text-muted-foreground hover:text-destructive transition-colors text-xs sm:text-sm"
           >
             <X className="h-4 w-4 ml-1" />
-            נקה טופס
+            <span className="hidden sm:inline">נקה טופס</span>
+            <span className="sm:hidden">נקה</span>
           </Button>
         )}
       </div>
 
       {/* Quick Search */}
-      <div className="mb-8 space-y-4">
-        <div className="relative input-focus-ring rounded-2xl">
-          <Search className="absolute right-4 top-1/2 -translate-y-1/2 h-5 w-5 text-muted-foreground" />
+      <div className="mb-6 sm:mb-8 space-y-3 sm:space-y-4">
+        <div className="relative input-focus-ring rounded-xl sm:rounded-2xl">
+          <Search className="absolute right-3 sm:right-4 top-1/2 -translate-y-1/2 h-4 w-4 sm:h-5 sm:w-5 text-muted-foreground" />
           <Input
-            placeholder="חיפוש מהיר לפי שם, ת״ז או מספר רכב..."
+            placeholder="חיפוש מהיר..."
             value={searchQuery}
             onChange={e => setSearchQuery(e.target.value)}
-            className="pr-12 h-14 text-base rounded-2xl border-2 border-border/60 focus:border-primary bg-background/50"
+            className="pr-10 sm:pr-12 h-11 sm:h-14 text-sm sm:text-base rounded-xl sm:rounded-2xl border-2 border-border/60 focus:border-primary bg-background/50"
           />
         </div>
 
@@ -196,9 +197,9 @@ export function QuickEntry({ persons, recentPersons, onAddLog, onAddPerson }: Qu
       </div>
 
       {/* Form Fields */}
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-5 mb-8">
-        <div className="space-y-2">
-          <Label htmlFor="name" className="text-sm font-semibold flex items-center gap-1">
+      <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 sm:gap-5 mb-6 sm:mb-8">
+        <div className="space-y-1.5 sm:space-y-2">
+          <Label htmlFor="name" className="text-xs sm:text-sm font-semibold flex items-center gap-1">
             שם מלא
             <span className="text-destructive">*</span>
           </Label>
@@ -209,12 +210,12 @@ export function QuickEntry({ persons, recentPersons, onAddLog, onAddPerson }: Qu
               setName(e.target.value);
               setSelectedPersonId(null);
             }}
-            className="h-12 rounded-xl border-2 border-border/60 focus:border-primary bg-background/50 transition-all"
+            className="h-10 sm:h-12 text-sm sm:text-base rounded-xl border-2 border-border/60 focus:border-primary bg-background/50 transition-all"
           />
         </div>
 
-        <div className="space-y-2">
-          <Label htmlFor="idNumber" className="text-sm font-semibold flex items-center gap-1">
+        <div className="space-y-1.5 sm:space-y-2">
+          <Label htmlFor="idNumber" className="text-xs sm:text-sm font-semibold flex items-center gap-1">
             ת"ז / מ.א
             <span className="text-destructive">*</span>
           </Label>
@@ -225,69 +226,69 @@ export function QuickEntry({ persons, recentPersons, onAddLog, onAddPerson }: Qu
               setIdNumber(e.target.value);
               setSelectedPersonId(null);
             }}
-            className="h-12 rounded-xl border-2 border-border/60 focus:border-primary bg-background/50 transition-all"
+            className="h-10 sm:h-12 text-sm sm:text-base rounded-xl border-2 border-border/60 focus:border-primary bg-background/50 transition-all"
           />
         </div>
 
-        <div className="space-y-2">
-          <Label htmlFor="role" className="text-sm font-semibold text-muted-foreground">
+        <div className="space-y-1.5 sm:space-y-2">
+          <Label htmlFor="role" className="text-xs sm:text-sm font-semibold text-muted-foreground">
             תפקיד
           </Label>
           <Input
             id="role"
             value={role}
             onChange={e => setRole(e.target.value)}
-            className="h-12 rounded-xl border-2 border-border/60 focus:border-primary bg-background/50 transition-all"
+            className="h-10 sm:h-12 text-sm sm:text-base rounded-xl border-2 border-border/60 focus:border-primary bg-background/50 transition-all"
           />
         </div>
 
-        <div className="space-y-2">
-          <Label htmlFor="vehicle" className="text-sm font-semibold flex items-center gap-1">
+        <div className="space-y-1.5 sm:space-y-2">
+          <Label htmlFor="vehicle" className="text-xs sm:text-sm font-semibold flex items-center gap-1">
             מספר רכב
             <span className="text-destructive">*</span>
           </Label>
           <div className="relative">
-            <Car className="absolute right-4 top-1/2 -translate-y-1/2 h-5 w-5 text-muted-foreground" />
+            <Car className="absolute right-3 top-1/2 -translate-y-1/2 h-4 w-4 sm:h-5 sm:w-5 text-muted-foreground" />
             <Input
               id="vehicle"
               value={vehicleNumber}
               onChange={e => setVehicleNumber(e.target.value)}
-              className="h-12 pr-12 rounded-xl border-2 border-border/60 focus:border-primary bg-background/50 transition-all"
+              className="h-10 sm:h-12 pr-10 sm:pr-12 text-sm sm:text-base rounded-xl border-2 border-border/60 focus:border-primary bg-background/50 transition-all"
             />
           </div>
         </div>
 
-        <div className="space-y-2 md:col-span-2">
-          <Label htmlFor="note" className="text-sm font-semibold text-muted-foreground">
+        <div className="space-y-1.5 sm:space-y-2 sm:col-span-2">
+          <Label htmlFor="note" className="text-xs sm:text-sm font-semibold text-muted-foreground">
             הערות נוספות
           </Label>
           <Textarea
             id="note"
             value={note}
             onChange={e => setNote(e.target.value)}
-            className="min-h-[80px] resize-none rounded-xl border-2 border-border/60 focus:border-primary bg-background/50 transition-all"
+            className="min-h-[70px] sm:min-h-[80px] text-sm sm:text-base resize-none rounded-xl border-2 border-border/60 focus:border-primary bg-background/50 transition-all"
           />
         </div>
       </div>
 
       {/* Action Buttons */}
-      <div className="flex gap-4">
+      <div className="flex gap-3 sm:gap-4">
         <Button
           variant="success"
           size="lg"
-          className="flex-1 h-14 text-lg font-bold rounded-2xl btn-glow shadow-glow-success hover:shadow-lg transition-all duration-300 hover:scale-[1.02] active:scale-[0.98]"
+          className="flex-1 h-12 sm:h-14 text-base sm:text-lg font-bold rounded-xl sm:rounded-2xl btn-glow shadow-glow-success hover:shadow-lg transition-all duration-300 hover:scale-[1.02] active:scale-[0.98]"
           onClick={() => handleSubmit('entry')}
         >
-          <LogIn className="h-6 w-6" />
+          <LogIn className="h-5 w-5 sm:h-6 sm:w-6" />
           כניסה
         </Button>
         <Button
           variant="warning"
           size="lg"
-          className="flex-1 h-14 text-lg font-bold rounded-2xl btn-glow shadow-glow-warning hover:shadow-lg transition-all duration-300 hover:scale-[1.02] active:scale-[0.98]"
+          className="flex-1 h-12 sm:h-14 text-base sm:text-lg font-bold rounded-xl sm:rounded-2xl btn-glow shadow-glow-warning hover:shadow-lg transition-all duration-300 hover:scale-[1.02] active:scale-[0.98]"
           onClick={() => handleSubmit('exit')}
         >
-          <LogOut className="h-6 w-6" />
+          <LogOut className="h-5 w-5 sm:h-6 sm:w-6" />
           יציאה
         </Button>
       </div>
