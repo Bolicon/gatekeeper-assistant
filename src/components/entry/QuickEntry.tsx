@@ -174,7 +174,6 @@ export function QuickEntry({ persons, recentPersons, onAddLog, onAddPerson }: Qu
         )}
       </div>
 
-      {/* Form Fields */}
       <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-6">
         <div className="space-y-2">
           <Label htmlFor="name">שם מלא *</Label>
@@ -185,7 +184,6 @@ export function QuickEntry({ persons, recentPersons, onAddLog, onAddPerson }: Qu
               setName(e.target.value);
               setSelectedPersonId(null);
             }}
-            placeholder="ישראל ישראלי"
           />
         </div>
 
@@ -198,7 +196,6 @@ export function QuickEntry({ persons, recentPersons, onAddLog, onAddPerson }: Qu
               setIdNumber(e.target.value);
               setSelectedPersonId(null);
             }}
-            placeholder="123456789"
           />
         </div>
 
@@ -208,7 +205,6 @@ export function QuickEntry({ persons, recentPersons, onAddLog, onAddPerson }: Qu
             id="role"
             value={role}
             onChange={e => setRole(e.target.value)}
-            placeholder="קבלן / עובד / אורח"
           />
         </div>
 
@@ -220,19 +216,17 @@ export function QuickEntry({ persons, recentPersons, onAddLog, onAddPerson }: Qu
               id="vehicle"
               value={vehicleNumber}
               onChange={e => setVehicleNumber(e.target.value)}
-              placeholder="12-345-67"
               className="pr-10"
             />
           </div>
         </div>
 
         <div className="space-y-2 md:col-span-2">
-          <Label htmlFor="note">הערה</Label>
+          <Label htmlFor="note">הערות נוספות</Label>
           <Textarea
             id="note"
             value={note}
             onChange={e => setNote(e.target.value)}
-            placeholder="הערות נוספות..."
             className="min-h-[60px] resize-none"
           />
         </div>
