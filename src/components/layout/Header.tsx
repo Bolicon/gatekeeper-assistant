@@ -1,6 +1,7 @@
-import { Shield, Settings, ClipboardList, Home, Sparkles } from 'lucide-react';
+import { Shield, Settings, ClipboardList, Home, Sparkles, Moon, Sun } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Link, useLocation } from 'react-router-dom';
+import { useTheme } from 'next-themes';
 
 interface HeaderProps {
   onSettingsClick: () => void;
@@ -9,6 +10,11 @@ interface HeaderProps {
 export function Header({ onSettingsClick }: HeaderProps) {
   const location = useLocation();
   const isLogsPage = location.pathname === '/logs';
+  const { theme, setTheme } = useTheme();
+
+  const toggleTheme = () => {
+    setTheme(theme === 'dark' ? 'light' : 'dark');
+  };
 
   return (
     <header className="glass-strong sticky top-0 z-50 border-b border-border/30">
@@ -31,7 +37,7 @@ export function Header({ onSettingsClick }: HeaderProps) {
             </div>
           </div>
           
-          <div className="flex items-center gap-3">
+          <div className="flex items-center gap-2">
             {isLogsPage ? (
               <Button 
                 variant="outline" 
@@ -55,6 +61,17 @@ export function Header({ onSettingsClick }: HeaderProps) {
                 </Link>
               </Button>
             )}
+
+            <Button 
+              variant="ghost" 
+              size="icon" 
+              onClick={toggleTheme}
+              className="hover:bg-muted/80 transition-all duration-300"
+            >
+              <Sun className="h-5 w-5 rotate-0 scale-100 transition-all dark:-rotate-90 dark:scale-0" />
+              <Moon className="absolute h-5 w-5 rotate-90 scale-0 transition-all dark:rotate-0 dark:scale-100" />
+              <span className="sr-only">Toggle theme</span>
+            </Button>
             
             <Button 
               variant="ghost" 
