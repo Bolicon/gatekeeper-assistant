@@ -1,7 +1,7 @@
 import { useState } from 'react';
 import { Header } from '@/components/layout/Header';
 import { QuickEntry } from '@/components/entry/QuickEntry';
-import { LogsTable } from '@/components/logs/LogsTable';
+import { ActivityLog } from '@/components/ActivityLog';
 import { SettingsDialog } from '@/components/settings/SettingsDialog';
 import { useGateData } from '@/hooks/useGateData';
 
@@ -33,7 +33,7 @@ const Index = () => {
           onAddPerson={addPerson}
         />
 
-        <LogsTable
+        <ActivityLog
           logs={filteredLogs}
           persons={persons}
           filters={filters}

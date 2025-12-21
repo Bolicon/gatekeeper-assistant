@@ -98,7 +98,9 @@ export function useGateData() {
       if (filters.dateFrom && log.timestamp < filters.dateFrom) return false;
       if (filters.dateTo && log.timestamp > filters.dateTo) return false;
       if (filters.personId && log.personId !== filters.personId) return false;
-      if (filters.vehicleNumber && log.vehicleNumber !== filters.vehicleNumber) return false;
+      if (filters.personName && !log.personName.toLowerCase().includes(filters.personName.toLowerCase())) return false;
+      if (filters.idNumber && !log.idNumber.includes(filters.idNumber)) return false;
+      if (filters.vehicleNumber && !log.vehicleNumber?.toLowerCase().includes(filters.vehicleNumber.toLowerCase())) return false;
       if (filters.actionType && filters.actionType !== 'all' && log.actionType !== filters.actionType) return false;
       if (filters.searchQuery) {
         const query = filters.searchQuery.toLowerCase();

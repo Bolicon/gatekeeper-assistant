@@ -190,7 +190,7 @@ export function QuickEntry({ persons, recentPersons, onAddLog, onAddPerson }: Qu
         </div>
 
         <div className="space-y-2">
-          <Label htmlFor="idNumber">תעודת זהות *</Label>
+          <Label htmlFor="idNumber">ת"ז / מ.א *</Label>
           <Input
             id="idNumber"
             value={idNumber}

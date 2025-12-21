@@ -23,6 +23,8 @@ export interface FilterOptions {
   dateFrom?: Date;
   dateTo?: Date;
   personId?: string;
+  personName?: string;
+  idNumber?: string;
   vehicleNumber?: string;
   actionType?: 'entry' | 'exit' | 'all';
   searchQuery?: string;
