@@ -1,19 +1,20 @@
-import { useState } from 'react';
 import { Header } from '@/components/layout/Header';
-import { QuickEntry } from '@/components/entry/QuickEntry';
+import { ActivityLog } from '@/components/ActivityLog';
 import { SettingsDialog } from '@/components/settings/SettingsDialog';
 import { useGateData } from '@/hooks/useGateData';
+import { useState } from 'react';
 
-const Index = () => {
+const LogsPage = () => {
   const [settingsOpen, setSettingsOpen] = useState(false);
 
   const {
     persons,
-    recentPersons,
+    filteredLogs,
     suggestHours,
-    addPerson,
-    addLog,
+    filters,
+    setFilters,
     setSuggestHours,
+    exportToCSV,
   } = useGateData();
 
   return (
@@ -21,11 +22,12 @@ const Index = () => {
       <Header onSettingsClick={() => setSettingsOpen(true)} />
 
       <main className="container mx-auto px-4 py-6">
-        <QuickEntry
+        <ActivityLog
+          logs={filteredLogs}
           persons={persons}
-          recentPersons={recentPersons}
-          onAddLog={addLog}
-          onAddPerson={addPerson}
+          filters={filters}
+          onFilterChange={setFilters}
+          onExport={exportToCSV}
         />
       </main>
 
@@ -39,4 +41,4 @@ const Index = () => {
   );
 };
 
-export default Index;
+export default LogsPage;
