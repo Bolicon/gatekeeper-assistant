@@ -1,16 +1,18 @@
 import { useState, useEffect, useCallback, useMemo } from 'react';
-import { Person, EntryLog, FilterOptions, Stats } from '@/types';
+import { Person, EntryLog, FilterOptions, Stats, RecentPersonsMode } from '@/types';
 
 const STORAGE_KEYS = {
   PERSONS: 'gate-persons',
   LOGS: 'gate-logs',
   SUGGEST_HOURS: 'gate-suggest-hours',
+  RECENT_MODE: 'gate-recent-mode',
 };
 
 export function useGateData() {
   const [persons, setPersons] = useState<Person[]>([]);
   const [logs, setLogs] = useState<EntryLog[]>([]);
   const [suggestHours, setSuggestHours] = useState<number>(24);
+  const [recentPersonsMode, setRecentPersonsMode] = useState<RecentPersonsMode>('recent');
   const [filters, setFilters] = useState<FilterOptions>({ actionType: 'all' });
 
   // Load data from localStorage
@@ -34,6 +36,10 @@ export function useGateData() {
     if (savedHours) {
       setSuggestHours(parseInt(savedHours));
     }
+    const savedMode = localStorage.getItem(STORAGE_KEYS.RECENT_MODE);
+    if (savedMode) {
+      setRecentPersonsMode(savedMode as RecentPersonsMode);
+    }
   }, []);
 
   // Save to localStorage
@@ -48,6 +54,10 @@ export function useGateData() {
   useEffect(() => {
     localStorage.setItem(STORAGE_KEYS.SUGGEST_HOURS, suggestHours.toString());
   }, [suggestHours]);
+
+  useEffect(() => {
+    localStorage.setItem(STORAGE_KEYS.RECENT_MODE, recentPersonsMode);
+  }, [recentPersonsMode]);
 
   // Add new person
   const addPerson = useCallback((person: Omit<Person, 'id' | 'createdAt'>) => {
@@ -91,16 +101,40 @@ export function useGateData() {
     setLogs(prev => prev.filter(log => log.id !== id));
   }, []);
 
-  // Get recent persons (for auto-suggest)
+  // Get recent persons (for auto-suggest) - limited to 5
   const recentPersons = useMemo(() => {
     const cutoffTime = new Date(Date.now() - suggestHours * 60 * 60 * 1000);
-    const recentPersonIds = new Set(
-      logs
-        .filter(log => log.timestamp >= cutoffTime)
-        .map(log => log.personId)
-    );
-    return persons.filter(p => recentPersonIds.has(p.id));
-  }, [persons, logs, suggestHours]);
+    const recentLogs = logs.filter(log => log.timestamp >= cutoffTime);
+    
+    if (recentPersonsMode === 'frequent') {
+      // Most frequent in the time window
+      const personFrequency = new Map<string, number>();
+      recentLogs.forEach(log => {
+        personFrequency.set(log.personId, (personFrequency.get(log.personId) || 0) + 1);
+      });
+      
+      return persons
+        .filter(p => personFrequency.has(p.id))
+        .sort((a, b) => (personFrequency.get(b.id) || 0) - (personFrequency.get(a.id) || 0))
+        .slice(0, 5);
+    } else {
+      // Most recent (last 5 unique persons)
+      const seenPersonIds = new Set<string>();
+      const recentPersonIds: string[] = [];
+      
+      for (const log of recentLogs) {
+        if (!seenPersonIds.has(log.personId)) {
+          seenPersonIds.add(log.personId);
+          recentPersonIds.push(log.personId);
+          if (recentPersonIds.length >= 5) break;
+        }
+      }
+      
+      return recentPersonIds
+        .map(id => persons.find(p => p.id === id))
+        .filter((p): p is Person => p !== undefined);
+    }
+  }, [persons, logs, suggestHours, recentPersonsMode]);
 
   // Filtered logs
   const filteredLogs = useMemo(() => {
@@ -189,6 +223,7 @@ export function useGateData() {
     recentPersons,
     stats,
     suggestHours,
+    recentPersonsMode,
     filters,
     addPerson,
     updatePerson,
@@ -198,6 +233,7 @@ export function useGateData() {
     deleteLog,
     setFilters,
     setSuggestHours,
+    setRecentPersonsMode,
     exportToCSV,
   };
 }

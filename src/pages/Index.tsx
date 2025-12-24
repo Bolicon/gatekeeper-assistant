@@ -11,9 +11,11 @@ const Index = () => {
     persons,
     recentPersons,
     suggestHours,
+    recentPersonsMode,
     addPerson,
     addLog,
     setSuggestHours,
+    setRecentPersonsMode,
   } = useGateData();
 
   return (
@@ -34,6 +36,8 @@ const Index = () => {
         onOpenChange={setSettingsOpen}
         suggestHours={suggestHours}
         onSuggestHoursChange={setSuggestHours}
+        recentPersonsMode={recentPersonsMode}
+        onRecentPersonsModeChange={setRecentPersonsMode}
       />
     </div>
   );

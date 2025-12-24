@@ -22,6 +22,7 @@ export function QuickEntry({ persons, recentPersons, onAddLog, onAddPerson }: Qu
   const [idNumber, setIdNumber] = useState('');
   const [role, setRole] = useState('');
   const [vehicleNumber, setVehicleNumber] = useState('');
+  const [vehiclePrefix, setVehiclePrefix] = useState<'' | 'צ'>('');
   const [note, setNote] = useState('');
   const [selectedPersonId, setSelectedPersonId] = useState<string | null>(null);
 
@@ -43,7 +44,14 @@ export function QuickEntry({ persons, recentPersons, onAddLog, onAddPerson }: Qu
     setName(person.name);
     setIdNumber(person.idNumber);
     setRole(person.role || '');
-    setVehicleNumber(person.vehicleNumber || '');
+    // Parse vehicle number to extract prefix
+    if (person.vehicleNumber?.startsWith('צ-')) {
+      setVehiclePrefix('צ');
+      setVehicleNumber(person.vehicleNumber.slice(2));
+    } else {
+      setVehiclePrefix('');
+      setVehicleNumber(person.vehicleNumber || '');
+    }
     setSelectedPersonId(person.id);
     setSearchQuery('');
   };
@@ -53,13 +61,34 @@ export function QuickEntry({ persons, recentPersons, onAddLog, onAddPerson }: Qu
     setIdNumber('');
     setRole('');
     setVehicleNumber('');
+    setVehiclePrefix('');
     setNote('');
     setSelectedPersonId(null);
     setSearchQuery('');
   };
 
+  const getFullVehicleNumber = () => {
+    if (!vehicleNumber) return '';
+    return vehiclePrefix ? `${vehiclePrefix}-${vehicleNumber}` : vehicleNumber;
+  };
+
+  const handleIdNumberChange = (value: string) => {
+    // Allow only digits
+    const numericValue = value.replace(/\D/g, '');
+    setIdNumber(numericValue);
+    setSelectedPersonId(null);
+  };
+
+  const handleVehicleNumberChange = (value: string) => {
+    // Allow only digits
+    const numericValue = value.replace(/\D/g, '');
+    setVehicleNumber(numericValue);
+  };
+
   const handleSubmit = (actionType: 'entry' | 'exit') => {
-    if (!name.trim() || !idNumber.trim() || !vehicleNumber.trim()) {
+    const fullVehicleNumber = getFullVehicleNumber();
+    
+    if (!name.trim() || !idNumber.trim() || !fullVehicleNumber.trim()) {
       toast.error('נא למלא שם, ת"ז/מ.א ומספר רכב');
       return;
     }
@@ -77,7 +106,7 @@ export function QuickEntry({ persons, recentPersons, onAddLog, onAddPerson }: Qu
         name,
         idNumber,
         role: role || undefined,
-        vehicleNumber,
+        vehicleNumber: fullVehicleNumber,
       });
       personId = newPerson.id;
     }
@@ -88,7 +117,7 @@ export function QuickEntry({ persons, recentPersons, onAddLog, onAddPerson }: Qu
       personName: name,
       idNumber,
       role: role || undefined,
-      vehicleNumber,
+      vehicleNumber: fullVehicleNumber,
       actionType,
       note: note || undefined,
     });
@@ -222,10 +251,9 @@ export function QuickEntry({ persons, recentPersons, onAddLog, onAddPerson }: Qu
           <Input
             id="idNumber"
             value={idNumber}
-            onChange={e => {
-              setIdNumber(e.target.value);
-              setSelectedPersonId(null);
-            }}
+            onChange={e => handleIdNumberChange(e.target.value)}
+            inputMode="numeric"
+            pattern="[0-9]*"
             className="h-10 sm:h-12 text-sm sm:text-base rounded-xl border-2 border-border/60 focus:border-primary bg-background/50 transition-all"
           />
         </div>
@@ -247,14 +275,27 @@ export function QuickEntry({ persons, recentPersons, onAddLog, onAddPerson }: Qu
             מספר רכב
             <span className="text-destructive">*</span>
           </Label>
-          <div className="relative">
-            <Car className="absolute right-3 top-1/2 -translate-y-1/2 h-4 w-4 sm:h-5 sm:w-5 text-muted-foreground" />
-            <Input
-              id="vehicle"
-              value={vehicleNumber}
-              onChange={e => setVehicleNumber(e.target.value)}
-              className="h-10 sm:h-12 pr-10 sm:pr-12 text-sm sm:text-base rounded-xl border-2 border-border/60 focus:border-primary bg-background/50 transition-all"
-            />
+          <div className="flex gap-2">
+            <select
+              value={vehiclePrefix}
+              onChange={e => setVehiclePrefix(e.target.value as '' | 'צ')}
+              className="h-10 sm:h-12 px-3 text-sm sm:text-base rounded-xl border-2 border-border/60 focus:border-primary bg-background/50 transition-all w-20"
+            >
+              <option value="">ללא</option>
+              <option value="צ">צ&apos;</option>
+            </select>
+            <div className="relative flex-1">
+              <Car className="absolute right-3 top-1/2 -translate-y-1/2 h-4 w-4 sm:h-5 sm:w-5 text-muted-foreground" />
+              <Input
+                id="vehicle"
+                value={vehicleNumber}
+                onChange={e => handleVehicleNumberChange(e.target.value)}
+                inputMode="numeric"
+                pattern="[0-9]*"
+                placeholder={vehiclePrefix ? `${vehiclePrefix}-12345` : '12345'}
+                className="h-10 sm:h-12 pr-10 sm:pr-12 text-sm sm:text-base rounded-xl border-2 border-border/60 focus:border-primary bg-background/50 transition-all"
+              />
+            </div>
           </div>
         </div>
 

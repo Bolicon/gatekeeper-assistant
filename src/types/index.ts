@@ -30,6 +30,8 @@ export interface FilterOptions {
   searchQuery?: string;
 }
 
+export type RecentPersonsMode = 'recent' | 'frequent';
+
 export interface Stats {
   totalEntries: number;
   totalExits: number;
