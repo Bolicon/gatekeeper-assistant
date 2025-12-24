@@ -22,7 +22,6 @@ export function QuickEntry({ persons, recentPersons, onAddLog, onAddPerson }: Qu
   const [idNumber, setIdNumber] = useState('');
   const [role, setRole] = useState('');
   const [vehicleNumber, setVehicleNumber] = useState('');
-  const [vehiclePrefix, setVehiclePrefix] = useState<'' | 'צ'>('');
   const [note, setNote] = useState('');
   const [selectedPersonId, setSelectedPersonId] = useState<string | null>(null);
 
@@ -44,12 +43,10 @@ export function QuickEntry({ persons, recentPersons, onAddLog, onAddPerson }: Qu
     setName(person.name);
     setIdNumber(person.idNumber);
     setRole(person.role || '');
-    // Parse vehicle number to extract prefix
+    // Extract raw vehicle number (remove צ- prefix if exists)
     if (person.vehicleNumber?.startsWith('צ-')) {
-      setVehiclePrefix('צ');
       setVehicleNumber(person.vehicleNumber.slice(2));
     } else {
-      setVehiclePrefix('');
       setVehicleNumber(person.vehicleNumber || '');
     }
     setSelectedPersonId(person.id);
@@ -61,15 +58,26 @@ export function QuickEntry({ persons, recentPersons, onAddLog, onAddPerson }: Qu
     setIdNumber('');
     setRole('');
     setVehicleNumber('');
-    setVehiclePrefix('');
     setNote('');
     setSelectedPersonId(null);
     setSearchQuery('');
   };
 
+  // 6 digits = צ- prefix, 7+ digits = no prefix
   const getFullVehicleNumber = () => {
     if (!vehicleNumber) return '';
-    return vehiclePrefix ? `${vehiclePrefix}-${vehicleNumber}` : vehicleNumber;
+    if (vehicleNumber.length === 6) {
+      return `צ-${vehicleNumber}`;
+    }
+    return vehicleNumber;
+  };
+
+  // Display value with prefix for 6 digits
+  const displayVehicleNumber = () => {
+    if (vehicleNumber.length === 6) {
+      return `צ-${vehicleNumber}`;
+    }
+    return vehicleNumber;
   };
 
   const handleIdNumberChange = (value: string) => {
@@ -275,28 +283,25 @@ export function QuickEntry({ persons, recentPersons, onAddLog, onAddPerson }: Qu
             מספר רכב
             <span className="text-destructive">*</span>
           </Label>
-          <div className="flex gap-2">
-            <select
-              value={vehiclePrefix}
-              onChange={e => setVehiclePrefix(e.target.value as '' | 'צ')}
-              className="h-10 sm:h-12 px-3 text-sm sm:text-base rounded-xl border-2 border-border/60 focus:border-primary bg-background/50 transition-all w-20"
-            >
-              <option value="">ללא</option>
-              <option value="צ">צ&apos;</option>
-            </select>
-            <div className="relative flex-1">
-              <Car className="absolute right-3 top-1/2 -translate-y-1/2 h-4 w-4 sm:h-5 sm:w-5 text-muted-foreground" />
-              <Input
-                id="vehicle"
-                value={vehicleNumber}
-                onChange={e => handleVehicleNumberChange(e.target.value)}
-                inputMode="numeric"
-                pattern="[0-9]*"
-                placeholder={vehiclePrefix ? `${vehiclePrefix}-12345` : '12345'}
-                className="h-10 sm:h-12 pr-10 sm:pr-12 text-sm sm:text-base rounded-xl border-2 border-border/60 focus:border-primary bg-background/50 transition-all"
-              />
-            </div>
+          <div className="relative">
+            <Car className="absolute right-3 top-1/2 -translate-y-1/2 h-4 w-4 sm:h-5 sm:w-5 text-muted-foreground" />
+            <Input
+              id="vehicle"
+              value={displayVehicleNumber()}
+              onChange={e => {
+                // Remove צ- prefix if user is typing, extract only digits
+                const value = e.target.value.replace(/^צ-/, '');
+                handleVehicleNumberChange(value);
+              }}
+              inputMode="numeric"
+              pattern="[0-9]*"
+              placeholder="6 ספרות = צ-, 7+ = רגיל"
+              className="h-10 sm:h-12 pr-10 sm:pr-12 text-sm sm:text-base rounded-xl border-2 border-border/60 focus:border-primary bg-background/50 transition-all"
+            />
           </div>
+          <p className="text-xs text-muted-foreground">
+            6 ספרות = צ&apos;-XXXXXX | 7+ ספרות = מספר רגיל
+          </p>
         </div>
 
         <div className="space-y-1.5 sm:space-y-2 sm:col-span-2">
