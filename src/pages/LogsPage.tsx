@@ -11,9 +11,11 @@ const LogsPage = () => {
     persons,
     filteredLogs,
     suggestHours,
+    recentPersonsMode,
     filters,
     setFilters,
     setSuggestHours,
+    setRecentPersonsMode,
     exportToCSV,
     updateLog,
     deleteLog,
@@ -40,6 +42,8 @@ const LogsPage = () => {
         onOpenChange={setSettingsOpen}
         suggestHours={suggestHours}
         onSuggestHoursChange={setSuggestHours}
+        recentPersonsMode={recentPersonsMode}
+        onRecentPersonsModeChange={setRecentPersonsMode}
       />
     </div>
   );

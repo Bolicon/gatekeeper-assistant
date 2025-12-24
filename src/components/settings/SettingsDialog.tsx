@@ -1,5 +1,4 @@
-import { Clock } from 'lucide-react';
-import { Button } from '@/components/ui/button';
+import { Clock, Users } from 'lucide-react';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import {
@@ -8,12 +7,22 @@ import {
   DialogHeader,
   DialogTitle,
 } from '@/components/ui/dialog';
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from '@/components/ui/select';
+import { RecentPersonsMode } from '@/types';
 
 interface SettingsDialogProps {
   open: boolean;
   onOpenChange: (open: boolean) => void;
   suggestHours: number;
   onSuggestHoursChange: (hours: number) => void;
+  recentPersonsMode: RecentPersonsMode;
+  onRecentPersonsModeChange: (mode: RecentPersonsMode) => void;
 }
 
 export function SettingsDialog({
@@ -21,6 +30,8 @@ export function SettingsDialog({
   onOpenChange,
   suggestHours,
   onSuggestHoursChange,
+  recentPersonsMode,
+  onRecentPersonsModeChange,
 }: SettingsDialogProps) {
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
@@ -43,11 +54,33 @@ export function SettingsDialog({
                 value={suggestHours}
                 onChange={e => onSuggestHoursChange(parseInt(e.target.value) || 24)}
                 className="w-24"
+                inputMode="numeric"
               />
               <span className="text-muted-foreground">שעות</span>
             </div>
             <p className="text-sm text-muted-foreground">
               אנשים שהופיעו ב-{suggestHours} השעות האחרונות יוצעו אוטומטית בעת מילוי הטופס
+            </p>
+          </div>
+
+          <div className="space-y-3">
+            <Label className="flex items-center gap-2">
+              <Users className="h-4 w-4 text-primary" />
+              סדר הצגת "נראו לאחרונה"
+            </Label>
+            <Select value={recentPersonsMode} onValueChange={(v) => onRecentPersonsModeChange(v as RecentPersonsMode)}>
+              <SelectTrigger className="w-full">
+                <SelectValue />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="recent">5 האחרונים (לפי זמן)</SelectItem>
+                <SelectItem value="frequent">5 הנפוצים ביותר</SelectItem>
+              </SelectContent>
+            </Select>
+            <p className="text-sm text-muted-foreground">
+              {recentPersonsMode === 'recent' 
+                ? 'מציג את 5 האנשים שנרשמו לאחרונה בחלון הזמן'
+                : 'מציג את 5 האנשים עם הכי הרבה רישומים בחלון הזמן'}
             </p>
           </div>
 
