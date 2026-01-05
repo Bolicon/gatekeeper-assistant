@@ -1,9 +1,8 @@
 import { useState, useEffect, useCallback, useMemo } from 'react';
 import { Person, EntryLog, FilterOptions, Stats, RecentPersonsMode } from '@/types';
+import { supabase } from '@/integrations/supabase/client';
 
 const STORAGE_KEYS = {
-  PERSONS: 'gate-persons',
-  LOGS: 'gate-logs',
   SUGGEST_HOURS: 'gate-suggest-hours',
   RECENT_MODE: 'gate-recent-mode',
 };
@@ -14,43 +13,67 @@ export function useGateData() {
   const [suggestHours, setSuggestHours] = useState<number>(24);
   const [recentPersonsMode, setRecentPersonsMode] = useState<RecentPersonsMode>('recent');
   const [filters, setFilters] = useState<FilterOptions>({ actionType: 'all' });
+  const [isLoading, setIsLoading] = useState(true);
 
-  // Load data from localStorage
+  // Load data from database
   useEffect(() => {
-    const savedPersons = localStorage.getItem(STORAGE_KEYS.PERSONS);
-    const savedLogs = localStorage.getItem(STORAGE_KEYS.LOGS);
-    const savedHours = localStorage.getItem(STORAGE_KEYS.SUGGEST_HOURS);
+    const loadData = async () => {
+      setIsLoading(true);
+      
+      // Load persons
+      const { data: personsData } = await supabase
+        .from('persons')
+        .select('*')
+        .order('created_at', { ascending: false });
+      
+      if (personsData) {
+        setPersons(personsData.map(p => ({
+          id: p.id,
+          name: p.name,
+          idNumber: p.id_number,
+          role: p.role || '',
+          vehicleNumber: p.vehicle_number || undefined,
+          createdAt: new Date(p.created_at),
+        })));
+      }
 
-    if (savedPersons) {
-      setPersons(JSON.parse(savedPersons).map((p: Person) => ({
-        ...p,
-        createdAt: new Date(p.createdAt),
-      })));
-    }
-    if (savedLogs) {
-      setLogs(JSON.parse(savedLogs).map((l: EntryLog) => ({
-        ...l,
-        timestamp: new Date(l.timestamp),
-      })));
-    }
-    if (savedHours) {
-      setSuggestHours(parseInt(savedHours));
-    }
-    const savedMode = localStorage.getItem(STORAGE_KEYS.RECENT_MODE);
-    if (savedMode) {
-      setRecentPersonsMode(savedMode as RecentPersonsMode);
-    }
+      // Load logs
+      const { data: logsData } = await supabase
+        .from('entry_logs')
+        .select('*')
+        .order('timestamp', { ascending: false });
+      
+      if (logsData) {
+        setLogs(logsData.map(l => ({
+          id: l.id,
+          personId: l.person_id || '',
+          personName: l.person_name,
+          idNumber: l.id_number,
+          role: l.role || '',
+          vehicleNumber: l.vehicle_number || undefined,
+          actionType: l.action_type as 'entry' | 'exit',
+          timestamp: new Date(l.timestamp),
+          note: l.note || undefined,
+        })));
+      }
+
+      // Load local settings
+      const savedHours = localStorage.getItem(STORAGE_KEYS.SUGGEST_HOURS);
+      if (savedHours) {
+        setSuggestHours(parseInt(savedHours));
+      }
+      const savedMode = localStorage.getItem(STORAGE_KEYS.RECENT_MODE);
+      if (savedMode) {
+        setRecentPersonsMode(savedMode as RecentPersonsMode);
+      }
+
+      setIsLoading(false);
+    };
+
+    loadData();
   }, []);
 
-  // Save to localStorage
-  useEffect(() => {
-    localStorage.setItem(STORAGE_KEYS.PERSONS, JSON.stringify(persons));
-  }, [persons]);
-
-  useEffect(() => {
-    localStorage.setItem(STORAGE_KEYS.LOGS, JSON.stringify(logs));
-  }, [logs]);
-
+  // Save local settings to localStorage
   useEffect(() => {
     localStorage.setItem(STORAGE_KEYS.SUGGEST_HOURS, suggestHours.toString());
   }, [suggestHours]);
@@ -60,44 +83,144 @@ export function useGateData() {
   }, [recentPersonsMode]);
 
   // Add new person
-  const addPerson = useCallback((person: Omit<Person, 'id' | 'createdAt'>) => {
+  const addPerson = useCallback(async (person: Omit<Person, 'id' | 'createdAt'>) => {
+    const { data, error } = await supabase
+      .from('persons')
+      .insert({
+        name: person.name,
+        id_number: person.idNumber,
+        role: person.role || null,
+        vehicle_number: person.vehicleNumber || null,
+      })
+      .select()
+      .single();
+
+    if (error || !data) {
+      console.error('Error adding person:', error);
+      throw error;
+    }
+
     const newPerson: Person = {
-      ...person,
-      id: crypto.randomUUID(),
-      createdAt: new Date(),
+      id: data.id,
+      name: data.name,
+      idNumber: data.id_number,
+      role: data.role || '',
+      vehicleNumber: data.vehicle_number || undefined,
+      createdAt: new Date(data.created_at),
     };
-    setPersons(prev => [...prev, newPerson]);
+
+    setPersons(prev => [newPerson, ...prev]);
     return newPerson;
   }, []);
 
   // Update person
-  const updatePerson = useCallback((id: string, updates: Partial<Person>) => {
+  const updatePerson = useCallback(async (id: string, updates: Partial<Person>) => {
+    const dbUpdates: Record<string, unknown> = {};
+    if (updates.name !== undefined) dbUpdates.name = updates.name;
+    if (updates.idNumber !== undefined) dbUpdates.id_number = updates.idNumber;
+    if (updates.role !== undefined) dbUpdates.role = updates.role || null;
+    if (updates.vehicleNumber !== undefined) dbUpdates.vehicle_number = updates.vehicleNumber || null;
+
+    const { error } = await supabase
+      .from('persons')
+      .update(dbUpdates)
+      .eq('id', id);
+
+    if (error) {
+      console.error('Error updating person:', error);
+      throw error;
+    }
+
     setPersons(prev => prev.map(p => p.id === id ? { ...p, ...updates } : p));
   }, []);
 
   // Delete person
-  const deletePerson = useCallback((id: string) => {
+  const deletePerson = useCallback(async (id: string) => {
+    const { error } = await supabase
+      .from('persons')
+      .delete()
+      .eq('id', id);
+
+    if (error) {
+      console.error('Error deleting person:', error);
+      throw error;
+    }
+
     setPersons(prev => prev.filter(p => p.id !== id));
   }, []);
 
   // Add log entry
-  const addLog = useCallback((log: Omit<EntryLog, 'id' | 'timestamp'>) => {
+  const addLog = useCallback(async (log: Omit<EntryLog, 'id' | 'timestamp'>) => {
+    const { data, error } = await supabase
+      .from('entry_logs')
+      .insert({
+        person_id: log.personId || null,
+        person_name: log.personName,
+        id_number: log.idNumber,
+        role: log.role || null,
+        vehicle_number: log.vehicleNumber || null,
+        action_type: log.actionType,
+        note: log.note || null,
+      })
+      .select()
+      .single();
+
+    if (error || !data) {
+      console.error('Error adding log:', error);
+      throw error;
+    }
+
     const newLog: EntryLog = {
-      ...log,
-      id: crypto.randomUUID(),
-      timestamp: new Date(),
+      id: data.id,
+      personId: data.person_id || '',
+      personName: data.person_name,
+      idNumber: data.id_number,
+      role: data.role || '',
+      vehicleNumber: data.vehicle_number || undefined,
+      actionType: data.action_type as 'entry' | 'exit',
+      timestamp: new Date(data.timestamp),
+      note: data.note || undefined,
     };
+
     setLogs(prev => [newLog, ...prev]);
     return newLog;
   }, []);
 
   // Update log entry
-  const updateLog = useCallback((id: string, updates: Partial<EntryLog>) => {
+  const updateLog = useCallback(async (id: string, updates: Partial<EntryLog>) => {
+    const dbUpdates: Record<string, unknown> = {};
+    if (updates.personName !== undefined) dbUpdates.person_name = updates.personName;
+    if (updates.idNumber !== undefined) dbUpdates.id_number = updates.idNumber;
+    if (updates.role !== undefined) dbUpdates.role = updates.role || null;
+    if (updates.vehicleNumber !== undefined) dbUpdates.vehicle_number = updates.vehicleNumber || null;
+    if (updates.actionType !== undefined) dbUpdates.action_type = updates.actionType;
+    if (updates.note !== undefined) dbUpdates.note = updates.note || null;
+
+    const { error } = await supabase
+      .from('entry_logs')
+      .update(dbUpdates)
+      .eq('id', id);
+
+    if (error) {
+      console.error('Error updating log:', error);
+      throw error;
+    }
+
     setLogs(prev => prev.map(log => log.id === id ? { ...log, ...updates } : log));
   }, []);
 
   // Delete log entry
-  const deleteLog = useCallback((id: string) => {
+  const deleteLog = useCallback(async (id: string) => {
+    const { error } = await supabase
+      .from('entry_logs')
+      .delete()
+      .eq('id', id);
+
+    if (error) {
+      console.error('Error deleting log:', error);
+      throw error;
+    }
+
     setLogs(prev => prev.filter(log => log.id !== id));
   }, []);
 
@@ -225,6 +348,7 @@ export function useGateData() {
     suggestHours,
     recentPersonsMode,
     filters,
+    isLoading,
     addPerson,
     updatePerson,
     deletePerson,

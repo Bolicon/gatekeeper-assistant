@@ -10,8 +10,8 @@ import { toast } from 'sonner';
 interface QuickEntryProps {
   persons: Person[];
   recentPersons: Person[];
-  onAddLog: (log: Omit<EntryLog, 'id' | 'timestamp'>) => void;
-  onAddPerson: (person: Omit<Person, 'id' | 'createdAt'>) => Person;
+  onAddLog: (log: Omit<EntryLog, 'id' | 'timestamp'>) => Promise<EntryLog>;
+  onAddPerson: (person: Omit<Person, 'id' | 'createdAt'>) => Promise<Person>;
 }
 
 export function QuickEntry({ persons, recentPersons, onAddLog, onAddPerson }: QuickEntryProps) {
@@ -93,7 +93,7 @@ export function QuickEntry({ persons, recentPersons, onAddLog, onAddPerson }: Qu
     setVehicleNumber(numericValue);
   };
 
-  const handleSubmit = (actionType: 'entry' | 'exit') => {
+  const handleSubmit = async (actionType: 'entry' | 'exit') => {
     const fullVehicleNumber = getFullVehicleNumber();
     
     if (!name.trim() || !idNumber.trim() || !fullVehicleNumber.trim()) {
@@ -101,40 +101,45 @@ export function QuickEntry({ persons, recentPersons, onAddLog, onAddPerson }: Qu
       return;
     }
 
-    let personId = selectedPersonId;
+    try {
+      let personId = selectedPersonId;
 
-    // Check if this person exists (by ID number)
-    const existingPerson = persons.find(p => p.idNumber === idNumber);
+      // Check if this person exists (by ID number)
+      const existingPerson = persons.find(p => p.idNumber === idNumber);
 
-    if (existingPerson) {
-      personId = existingPerson.id;
-    } else {
-      // Create new person
-      const newPerson = onAddPerson({
-        name,
+      if (existingPerson) {
+        personId = existingPerson.id;
+      } else {
+        // Create new person
+        const newPerson = await onAddPerson({
+          name,
+          idNumber,
+          role: role || undefined,
+          vehicleNumber: fullVehicleNumber,
+        });
+        personId = newPerson.id;
+      }
+
+      // Add log entry
+      await onAddLog({
+        personId: personId!,
+        personName: name,
         idNumber,
         role: role || undefined,
         vehicleNumber: fullVehicleNumber,
+        actionType,
+        note: note || undefined,
       });
-      personId = newPerson.id;
+
+      toast.success(
+        actionType === 'entry' ? '✓ כניסה נרשמה בהצלחה' : '✓ יציאה נרשמה בהצלחה',
+        { duration: 3000 }
+      );
+      handleClearForm();
+    } catch (error) {
+      console.error('Error submitting:', error);
+      toast.error('שגיאה בשמירת הנתונים');
     }
-
-    // Add log entry
-    onAddLog({
-      personId: personId!,
-      personName: name,
-      idNumber,
-      role: role || undefined,
-      vehicleNumber: fullVehicleNumber,
-      actionType,
-      note: note || undefined,
-    });
-
-    toast.success(
-      actionType === 'entry' ? '✓ כניסה נרשמה בהצלחה' : '✓ יציאה נרשמה בהצלחה',
-      { duration: 3000 }
-    );
-    handleClearForm();
   };
 
   const showSuggestions = searchQuery.trim().length > 0 && suggestions.length > 0;
