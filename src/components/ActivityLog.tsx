@@ -17,8 +17,8 @@ interface ActivityLogProps {
   filters: FilterOptions;
   onFilterChange: (filters: FilterOptions) => void;
   onExport: (logs: EntryLog[]) => void;
-  onUpdateLog?: (id: string, updates: Partial<EntryLog>) => void;
-  onDeleteLog?: (id: string) => void;
+  onUpdateLog?: (id: string, updates: Partial<EntryLog>) => Promise<void>;
+  onDeleteLog?: (id: string) => Promise<void>;
 }
 
 export function ActivityLog({ logs, filters, onFilterChange, onExport, onUpdateLog, onDeleteLog }: ActivityLogProps) {
@@ -48,7 +48,7 @@ export function ActivityLog({ logs, filters, onFilterChange, onExport, onUpdateL
     setEditActionType(log.actionType);
   };
 
-  const handleSaveEdit = () => {
+  const handleSaveEdit = async () => {
     if (!editingLog || !onUpdateLog) return;
     
     if (!editName.trim() || !editIdNumber.trim() || !editVehicle.trim()) {
@@ -56,24 +56,34 @@ export function ActivityLog({ logs, filters, onFilterChange, onExport, onUpdateL
       return;
     }
 
-    onUpdateLog(editingLog.id, {
-      personName: editName,
-      idNumber: editIdNumber,
-      role: editRole || undefined,
-      vehicleNumber: editVehicle,
-      note: editNote || undefined,
-      actionType: editActionType,
-    });
+    try {
+      await onUpdateLog(editingLog.id, {
+        personName: editName,
+        idNumber: editIdNumber,
+        role: editRole || undefined,
+        vehicleNumber: editVehicle,
+        note: editNote || undefined,
+        actionType: editActionType,
+      });
 
-    toast.success('הרשומה עודכנה בהצלחה');
-    setEditingLog(null);
+      toast.success('הרשומה עודכנה בהצלחה');
+      setEditingLog(null);
+    } catch (error) {
+      console.error('Error updating log:', error);
+      toast.error('שגיאה בעדכון הרשומה');
+    }
   };
 
-  const handleDeleteConfirm = () => {
+  const handleDeleteConfirm = async () => {
     if (!deleteLogId || !onDeleteLog) return;
-    onDeleteLog(deleteLogId);
-    toast.success('הרשומה נמחקה');
-    setDeleteLogId(null);
+    try {
+      await onDeleteLog(deleteLogId);
+      toast.success('הרשומה נמחקה');
+      setDeleteLogId(null);
+    } catch (error) {
+      console.error('Error deleting log:', error);
+      toast.error('שגיאה במחיקת הרשומה');
+    }
   };
 
   const hasActiveFilters =
